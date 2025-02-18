@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>参考文献格式转换工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .api-section {
+            transition: all 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .model-select-container {
+            margin-top: 10px;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button.reset {
+            background-color: #f44336;
+        }
+
+        button.reset:hover {
+            background-color: #da190b;
+        }
+
+        .result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        #errorMessage {
+            color: red;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff3f3;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .status-message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-message.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .settings-saved {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>参考文献格式转换工具 😺v1.0</h1>
+        <div class="container">
+    
+            
+            <div class="description-section">
+                <p class="tool-description">
+                    这是一个帮助你快速转换参考文献格式的工具。使用说明：
+                </p>
+                <ol class="instruction-list">
+                    <li>首先配置 API，选择提供商并输入 API Key</li>
+                    <li>建议使用OpenRouter的gpt-4o-mini模型，比较便宜</li>
+                    <li>在"目标参考文献格式"中粘贴你想要转换成的目标格式样例</li>
+                    <li>在"输入需要转换的参考文献"中粘贴需要转换的参考文献</li>
+                    <li>点击"转换参考文献"按钮即可获得转换结果</li>
+                    <li>如果需要更换api，重新加载页面即可</li>
+                </ol>
+                <p class="note">
+                    注意：转换结果可以直接复制，也可以下载为 TXT 或 RTF 格式
+                </p>
+            </div>
+        <div class="section api-section" id="apiSection">
+            <h2>API 设置</h2>
+            <div id="settingsSaved" class="settings-saved">设置已保存成功！</div>
+            <select id="apiProvider" onchange="handleApiProviderChange()">
+                <option value="">请选择 API 提供商</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="deepseek">DeepSeek</option>
+            </select>
+
+            <div id="modelSelectContainer" class="model-select-container hidden">
+                <select id="modelSelect">
+                    <option value="">请选择模型</option>
+                    <option value="openai/gpt-4o-mini-2024-07-18">GPT-4o-mini</option>
+                    <option value="openai/gpt-4-0125-preview">GPT-4o</option>
+                    <option value="anthropic/claude-3-sonnet-20240229">Claude-3 Sonnet</option>
+                    <option value="google/gemini-pro">Gemini Pro</option>
+                </select>
+            </div>
+
+            <input type="text" id="apiKey" placeholder="请输入 API Key">
+            <button onclick="saveApiSettings()">保存 API 设置</button>
+        </div>
+
+        <div class="section">
+            <h2>目标参考文献格式</h2>
+            <textarea id="referenceStyle" placeholder="请粘贴目标参考文献格式样例"></textarea>
+        </div>
+
+        <div class="section">
+            <h2>输入需要转换的参考文献</h2>
+            <textarea id="inputReferences" placeholder="请输入需要转换的参考文献"></textarea>
+        </div>
+
+        <div class="section">
+            <div id="loadingMessage" class="loading">正在转换中，请稍候...</div>
+            <div id="errorMessage"></div>
+            <button onclick="convertReferences()">转换参考文献</button>
+            <button class="reset" onclick="resetContent()">重置内容</button>
+        </div>
+
+        <div class="section result hidden" id="resultSection">
+            <h2>转换结果</h2>
+            <div id="resultContent"></div>
+            <button onclick="downloadTxt()">下载 TXT</button>
+            <button onclick="downloadRtf()">下载 RTF</button>
+        </div>
+    </div>
+
+    <script>
+        let apiSettings = {
+            provider: '',
+            key: '',
+            model: ''
+        };
+
+        function handleApiProviderChange() {
+            const provider = document.getElementById('apiProvider').value;
+            const modelSelectContainer = document.getElementById('modelSelectContainer');
+            
+            if (provider === 'openrouter') {
+                modelSelectContainer.classList.remove('hidden');
+            } else {
+                modelSelectContainer.classList.add('hidden');
+            }
+        }
+
+        function saveApiSettings() {
+            const provider = document.getElementById('apiProvider').value;
+            const key = document.getElementById('apiKey').value;
+            const model = document.getElementById('modelSelect').value;
+
+            if (!provider || !key) {
+                showError('请选择API提供商并输入API Key');
+                return;
+            }
+
+            if (provider === 'openrouter' && !model) {
+                showError('使用OpenRouter时请选择模型');
+                return;
+            }
+
+            apiSettings.provider = provider;
+            apiSettings.key = key;
+            apiSettings.model = model;
+
+            // 显示保存成功消息
+            const settingsSaved = document.getElementById('settingsSaved');
+            settingsSaved.style.display = 'block';
+            setTimeout(() => {
+                settingsSaved.style.display = 'none';
+                document.getElementById('apiSection').classList.add('hidden');
+            }, 2000);
+
+            hideError();
+        }
+
+        function resetContent() {
+            document.getElementById('inputReferences').value = '';
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('resultContent').textContent = '';
+            hideError();
+        }
+
+        async function convertReferences() {
+            if (!apiSettings.provider || !apiSettings.key) {
+                showError('请先完成API设置');
+                return;
+            }
+
+            const referenceStyle = document.getElementById('referenceStyle').value;
+            const inputReferences = document.getElementById('inputReferences').value;
+
+            if (!referenceStyle || !inputReferences) {
+                showError('请输入目标格式和需要转换的参考文献');
+                return;
+            }
+
+            const loadingMessage = document.getElementById('loadingMessage');
+            loadingMessage.classList.add('show');
+            hideError();
+
+            const prompt = `You are a professional expert in formatting journal paper references. Your task is to convert references from one style to another with precision and attention to detail.
+Here is the target reference style that you need to follow:
+${referenceStyle}
+(1) Carefully examine the input references and identify their current format.
+(2) Convert each reference into the target style exactly as specified, ensuring all details (e.g., punctuation, capitalization, order, abbreviations, etc.) match the target format.
+(3) Double-check your output for consistency and accuracy to ensure it complies with the target style.
+Your goal is to produce perfectly formatted references in the target style, regardless of the original style or structure of the input.
+
+Input references:
+${inputReferences}`;
+
+            try {
+                const result = await callApi(prompt);
+                displayResult(result);
+            } catch (error) {
+                showError('转换过程中出错：' + error.message);
+                console.error('API Error:', error);
+            } finally {
+                loadingMessage.classList.remove('show');
+            }
+        }
+
+        async function callApi(prompt) {
+            let apiUrl, headers, body;
+
+            switch(apiSettings.provider) {
+                case 'openai':
+                    apiUrl = 'https://api.openai.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiSettings.key}`
+                    };
+                    body = JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{
+                            role: "user",
+                            content: prompt
+                        }],
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    });
+                    break;
+                case 'openrouter':
+                    apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiSettings.key}`,
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Reference Format Converter'
+                    };
+                    body = JSON.stringify({
+                        model: apiSettings.model,
+                        messages: [{
+                            role: "user",
+                            content: prompt
+                        }],
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    });
+                    break;
+                default:
+                    throw new Error('不支持的API提供商');
+            }
+
+            console.log('Sending request to:', apiUrl);
+            console.log('Request headers:', headers);
+            console.log('Request body:', body);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: body
+                });
+
+                const responseData = await response.json();
+                console.log('API Response:', responseData);
+
+                if (!response.ok) {
+                    throw new Error(`API 请求失败: ${response.status} - ${JSON.stringify(responseData)}`);
+                }
+
+                if (!responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
+                    throw new Error('API 返回数据格式不正确');
+                }
+
+                return responseData.choices[0].message.content;
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw new Error(`API 调用失败: ${error.message}`);
+            }
+        }
+
+        function displayResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultSection.classList.remove('hidden');
+            resultContent.textContent = result;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+        }
+
+        function downloadTxt() {
+            const content = document.getElementById('resultContent').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'references.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadRtf() {
+            const content = document.getElementById('resultContent').textContent;
+            const rtfContent = `{\\rtf1\\ansi\\deff0
+{\\fonttbl{\\f0\\froman Times New Roman;}}
+\\viewkind4\\uc1\\pard\\f0\\fs24 ${content.replace(/\n/g, '\\par\n')}
+}`;
+            
+            const blob = new Blob([rtfContent], { type: 'application/rtf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'references.rtf';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
