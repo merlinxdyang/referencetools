@@ -139,7 +139,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>参考文献格式转换工具 😺v1.0</h1>
+        <h1>Merlin's Tool: 参考文献格式转换工具 😺v1.0</h1>
         <div class="container">
     
             
@@ -149,6 +149,7 @@
                 </p>
                 <ol class="instruction-list">
                     <li>首先配置 API，选择提供商并输入 API Key</li>
+                    <li>OpenRouter的api key申请教程见<a href="https://zhuanlan.zhihu.com/p/17371394500" target="_blank" rel="noopener noreferrer">这里</a></li>
                     <li>建议使用OpenRouter的gpt-4o-mini模型，比较便宜</li>
                     <li>在"目标参考文献格式"中粘贴你想要转换成的目标格式样例</li>
                     <li>在"输入需要转换的参考文献"中粘贴需要转换的参考文献</li>
@@ -167,7 +168,7 @@
                 <option value="openai">OpenAI</option>
                 <option value="claude">Claude</option>
                 <option value="openrouter">OpenRouter</option>
-                <option value="deepseek">DeepSeek</option>
+                <!--<option value="deepseek">DeepSeek</option>-->
             </select>
 
             <div id="modelSelectContainer" class="model-select-container hidden">
@@ -177,6 +178,7 @@
                     <option value="openai/gpt-4-0125-preview">GPT-4o</option>
                     <option value="anthropic/claude-3-sonnet-20240229">Claude-3 Sonnet</option>
                     <option value="google/gemini-pro">Gemini Pro</option>
+                    <!--<option value="deepseek/deepseek-r1-distill-qwen-32b">deepseek-r1-distill-qwen-32b</option>-->
                 </select>
             </div>
 
